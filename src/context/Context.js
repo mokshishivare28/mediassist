@@ -32,26 +32,14 @@ const ContextProvider = (props) => {
     const [input, setInput] = useState("");
     const [recentPrompt, setRecentPrompt] = useState("");
     const [prevPrompts, setPrevPrompts] = useState([]);
+    const [messages, setMessages] = useState([]);
     const [showResult, setShowResult] = useState(false);
     const [loading,setLoading] = useState(false);
     const [resultData,setResultData] = useState("");
 
-    const delayPara = (index, nextWord) => {
-        setTimeout(function() {
-            setResultData(prev=>prev+nextWord);
-        },75*index)
-    }
-
-
-    const onSent = async (prompt) => {
-        setInput("")
-        setResultData("")
-        setLoading(true)
-        setShowResult(true)
-        setRecentPrompt(input)
-        const response = await runChat(input, MEDICAL_SYSTEM_PROMPT)
+    const formatResponse = (response) => {
         let responseArray = response.split("**");
-        let newResponse="";
+        let newResponse = "";
         for(let i = 0; i < responseArray.length; i++) {
             if (i === 0 || i%2 !== 1) {
                 newResponse += responseArray[i];
@@ -60,19 +48,49 @@ const ContextProvider = (props) => {
                 newResponse += "<b>"+responseArray[i]+"</b>";
             }
         }
-        let newResponse2 = newResponse.split("*").join("</br>")
-        let newResponseArray = newResponse2.split(" ");
-        for(let i = 0; i < newResponseArray.length; i++) {
-            const nextWord = newResponseArray[i];
-            delayPara(i,nextWord+" ")
-        }
-        setLoading(false)
+        return newResponse.split("*").join("</br>");
     }
 
+    const onSent = async (prompt) => {
+        const promptText = (prompt || input).trim();
+        if (!promptText) return;
+
+        setInput("");
+        setResultData("");
+        setLoading(true);
+        setShowResult(true);
+        setRecentPrompt(promptText);
+        setMessages(prev=>[...prev, {role: 'user', content: promptText}]);
+
+        try {
+            const response = await runChat(promptText, MEDICAL_SYSTEM_PROMPT, messages);
+            const formatted = formatResponse(response);
+            setResultData(formatted);
+            setMessages(prev=>[...prev, {role: 'assistant', content: formatted}]);
+        } catch (error) {
+            const errorText = `Error: ${error.message}`;
+            setResultData(errorText);
+            setMessages(prev=>[...prev, {role:'assistant', content:errorText}]);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    const resetChat = () => {
+        setInput("");
+        setRecentPrompt("");
+        setShowResult(false);
+        setLoading(false);
+        setResultData("");
+        setMessages([]);
+        setPrevPrompts([]);
+    }
 
     const contextValue = {
         prevPrompts,
         setPrevPrompts,
+        messages,
+        resetChat,
         onSent,
         setRecentPrompt,
         recentPrompt,

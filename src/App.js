@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import bg from "./img/bg.png";
 import { MainLayout } from "./styles/Layouts";
@@ -6,10 +6,12 @@ import Navigation from "./Components/Navigation/Navigation";
 import Home from "./Components/Home/Home";
 import MentalWellness from "./Components/MentalWellness/MentalWellness";
 import MedicalConsultation from "./Components/SymptomAnalysis/MedicalConsultation";
+import LoadingScreen from "./Components/LoadingScreen/LoadingScreen";
 import "./index.css";
 
 function App() {
   const [active, setActive] = useState(1);
+  const [loadingApp, setLoadingApp] = useState(true);
   const [fil, setFil] = useState([]);
   const updateActive = (activeState) => {
     setActive(activeState);
@@ -31,12 +33,21 @@ function App() {
     }
   };
 
+  useEffect(() => {
+    const t = setTimeout(() => setLoadingApp(false), 2000);
+    return () => clearTimeout(t);
+  }, []);
+
   return (
     <AppStyled bg={bg} className="App">
-      <MainLayout>
-        <Navigation active={active} setActive={setActive} />
-        <main>{displayData()}</main>
-      </MainLayout>
+      {loadingApp ? (
+        <LoadingScreen />
+      ) : (
+        <MainLayout>
+          <Navigation active={active} setActive={setActive} />
+          <main>{displayData()}</main>
+        </MainLayout>
+      )}
     </AppStyled>
   );
 }

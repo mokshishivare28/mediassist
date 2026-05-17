@@ -7,7 +7,7 @@ import gemini_icon from '../../img/gemini_icon.png'
 import { Context } from '../../context/Context';
 
 function MedicalConsultation() {
-  const {onSent,recentPrompt,showResult,loading,resultData,setInput,input} = useContext(Context)
+  const {onSent, messages, resetChat, loading, resultData, setInput, input} = useContext(Context)
 
   return (
     <MentStyled>
@@ -16,7 +16,7 @@ function MedicalConsultation() {
           <h2>Medi-Assist</h2>
         </div>
         <div className="main-container">
-          {!showResult
+          {messages.length === 0
           ?<>
             <div className='greet'>
             <p><span>Hi, there!</span></p>
@@ -24,21 +24,35 @@ function MedicalConsultation() {
             </div>
           </>
           :<div className='result'>
-              <div className='result-title'>
-                <img src={user_icon} alt=""/>
-                <p>{recentPrompt}</p>
+              <div className='chat-header'>
+                <button className='new-chat' onClick={resetChat}>New Chat</button>
               </div>
-              <div className='result-data'>
-                <img src={gemini_icon} alt=""></img>
-                {loading
-                ?<div className='loader'>
-                    <hr/>
-                    <hr/>
-                    <hr/>
+              {messages.map((msg, index) => (
+                <div key={index} className={`chat-entry ${msg.role}`}>
+                  <div className='result-title'>
+                    <img src={msg.role === 'user' ? user_icon : gemini_icon} alt=""/>
+                    {msg.role === 'user'
+                      ? <p>{msg.content}</p>
+                      : <div className='result-data'><p dangerouslySetInnerHTML={{__html: msg.content}}></p></div>
+                    }
+                  </div>
                 </div>
-                :<p dangerouslySetInnerHTML={{__html:resultData}}></p>
-                }
-              </div>
+              ))}
+              {loading && (
+                <div className='result'>
+                  <div className='result-title'>
+                    <img src={gemini_icon} alt="" />
+                    <p>Typing...</p>
+                  </div>
+                  <div className='result-data'>
+                    <div className='loader'>
+                      <hr />
+                      <hr />
+                      <hr />
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           }
           <div className='main-bottom'>
@@ -162,6 +176,40 @@ const MentStyled = styled.nav`
     padding: 0px 5%;
     padding-bottom: 20vh;
     overflow: hidden;
+  }
+
+  .chat-header{
+    display: flex;
+    justify-content: flex-end;
+    padding: 15px 5%;
+  }
+
+  .new-chat{
+    background: darkviolet;
+    color: white;
+    border: none;
+    border-radius: 999px;
+    padding: 10px 18px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+
+  .chat-entry{
+    margin-bottom: 20px;
+  }
+
+  .chat-entry.user .result-title p{
+    background: #eef2ff;
+    padding: 14px 18px;
+    border-radius: 20px;
+    max-width: 75%;
+  }
+
+  .chat-entry.assistant .result-data p{
+    background: #f9f9f9;
+    padding: 14px 18px;
+    border-radius: 20px;
+    max-width: 75%;
   }
 
   .result-title{

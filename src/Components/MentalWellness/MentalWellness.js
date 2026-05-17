@@ -7,7 +7,7 @@ import gemini_icon from '../../img/gemini_icon.png'
 import { MentalWellnessContext } from '../../context/MentalWellnessContext';
 
 function MentalWellness() {
-  const {onSent,recentPrompt,showResult,loading,resultData,setInput,input} = useContext(MentalWellnessContext)
+  const {onSent, messages, resetChat, loading, resultData, setInput, input} = useContext(MentalWellnessContext)
 
   return (
     <MentStyled>
@@ -16,7 +16,7 @@ function MentalWellness() {
           <h2>Mind-Bot</h2>
         </div>
         <div className="main-container">
-          {!showResult
+          {messages.length === 0
           ?<>
             <div className='greet'>
             <p><span>Hi, there!</span></p>
@@ -24,21 +24,35 @@ function MentalWellness() {
             </div>
           </>
           :<div className='result'>
-              <div className='result-title'>
-                <img src={user_icon} alt=""/>
-                <p>{recentPrompt}</p>
+              <div className='chat-header'>
+                <button className='new-chat' onClick={resetChat}>New Chat</button>
               </div>
-              <div className='result-data'>
-                <img src={gemini_icon} alt=""></img>
-                {loading
-                ?<div className='loader'>
-                    <hr/>
-                    <hr/>
-                    <hr/>
+              {messages.map((msg, index) => (
+                <div key={index} className={`chat-entry ${msg.role}`}>
+                  <div className='result-title'>
+                    <img src={msg.role === 'user' ? user_icon : gemini_icon} alt=""/>
+                    {msg.role === 'user'
+                      ? <p>{msg.content}</p>
+                      : <div className='result-data'><p dangerouslySetInnerHTML={{__html: msg.content}}></p></div>
+                    }
+                  </div>
                 </div>
-                :<p dangerouslySetInnerHTML={{__html:resultData}}></p>
-                }
-              </div>
+              ))}
+              {loading && (
+                <div className='result'>
+                  <div className='result-title'>
+                    <img src={gemini_icon} alt="" />
+                    <p>Typing...</p>
+                  </div>
+                  <div className='result-data'>
+                    <div className='loader'>
+                      <hr/>
+                      <hr/>
+                      <hr/>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           }
           <div className='main-bottom'>
@@ -93,6 +107,7 @@ const MentStyled = styled.nav`
     /* padding: -70px; */
     margin: -15px 88px;
     color: black;
+    overflow: hidden;
   }
 
   .main .greet{
@@ -159,18 +174,56 @@ const MentStyled = styled.nav`
 
   .result{
     padding: 0px 5%;
-    max-height: 70vh;
-    overflow-y: scroll;
+    padding-bottom: 20vh;
+    overflow: hidden;
   }
 
   .result::-webkit-scrollbar{
     display: none;
   }
 
+  .chat-header{
+    display: flex;
+    justify-content: flex-end;
+    padding: 15px 5%;
+  }
+
+  .new-chat{
+    background: darkviolet;
+    color: white;
+    border: none;
+    border-radius: 999px;
+    padding: 10px 18px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+
+  .chat-entry{
+    margin-bottom: 20px;
+  }
+
+  .chat-entry.user .result-title p{
+    background: #eef2ff;
+    padding: 14px 18px;
+    border-radius: 20px;
+    max-width: 75%;
+  }
+
+  .chat-entry.assistant .result-data{
+    flex: 1;
+  }
+
+  .chat-entry.assistant .result-data p{
+    background: #f9f9f9;
+    padding: 14px 18px;
+    border-radius: 20px;
+    max-width: 75%;
+  }
+
   .result-title{
     margin: 40px 0px;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 20px;
   }
 
@@ -184,6 +237,7 @@ const MentStyled = styled.nav`
     display: flex;
     align-items: start;
     gap: 20px;
+    overflow: hidden;
   }
 
   .loader{
@@ -211,9 +265,19 @@ const MentStyled = styled.nav`
     }
   }
   .result-data p{
+    flex: 1;
     font-size: 17px;
     font-weight: 300;
     line-height: 1.8;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    max-height: 50vh;
+    overflow-y: auto;
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    border: 1px solid #e8e8e8;
   }
  
 `;

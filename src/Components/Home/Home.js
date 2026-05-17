@@ -29,7 +29,7 @@ function Home({ updateActive }) {
 
   return (
     <HomeStyled>
-      {!selectedComponent ? (
+      {!selectedComponent ? ( 
         <>
           <HeroSection>
             <div className='hero'>
