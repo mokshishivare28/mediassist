@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
 import { InnerLayout } from '../../styles/Layouts';
 import SymptomAnalysis from '../SymptomAnalysis/SymptomAnalysis';
@@ -8,10 +8,21 @@ import hero from '../../img/hero.png'
 function Home({ updateActive }) {
   const [selectedComponent, setSelectedComponent] = useState(null);
   const [message, setMessage] = useState("");
+  const [firstName, setFirstName] = useState('');
 
   const handleComponentClick = (component) => {
     setSelectedComponent(component);
   };
+
+  useEffect(() => {
+    try {
+      const full = localStorage.getItem('user_full_name') || '';
+      const first = full.split(' ')[0] || '';
+      setFirstName(first);
+    } catch (e) {
+      setFirstName('');
+    }
+  }, []);
 
   const renderSelectedComponent = () => {
     switch (selectedComponent) {
@@ -34,6 +45,7 @@ function Home({ updateActive }) {
           <HeroSection>
             <div className='hero'>
               <div className='des'>
+                {firstName ? <h3>Hello, {firstName} 👋</h3> : null}
                 <h1>Medi Assist:</h1>
                 <h2>Take Charge of Your Health, Mind & Body</h2>
                 <p>
@@ -85,23 +97,60 @@ const HomeStyled = styled.div`
 
 /* 🔥 HERO */
 const HeroSection = styled.div`
-  height: 350px;
+  min-height: 350px;
   display: flex;
   justify-content: center;
   align-items: center;
   text-align: center;
 
   .hero{
-    height: 300px;
+    height: 100%;
     margin: 50px 80px;
     display: flex;
     justify-content: space-between;
+    flex-wrap: wrap;
   }
 
   .des{
     flex: 1;
     margin-right: 20px;
     margin-top: 40px;
+  }
+
+  @media (max-width: 768px) {
+    .hero {
+      flex-direction: column;
+      align-items: center;
+      margin: 30px 24px;
+    }
+
+    .des {
+      margin-right: 0;
+      width: 100%;
+    }
+
+    .des img {
+      width: 100%;
+      max-width: 320px;
+      margin-left: 0;
+      margin-top: 20px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    min-height: auto;
+
+    .hero {
+      margin: 20px 14px;
+    }
+
+    .des h1 {
+      font-size: 32px;
+    }
+
+    .des h2 {
+      font-size: 26px;
+    }
   }
 
   .des h3{
@@ -143,7 +192,16 @@ const CardContainer = styled.div`
   display: flex;
   gap: 30px;
   justify-content: center;
+  flex-wrap: wrap;
   margin: 100px 50px;
+
+  @media (max-width: 768px) {
+    margin: 80px 24px;
+  }
+
+  @media (max-width: 480px) {
+    margin: 40px 16px;
+  }
 `;
 
 /* 🔥 GLASS EFFECT CARDS */
@@ -155,6 +213,14 @@ const Card = styled.div`
 
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
   width: calc(33.33% - 20px);
+
+  @media (max-width: 992px) {
+    width: calc(50% - 20px);
+  }
+
+  @media (max-width: 640px) {
+    width: 100%;
+  }
 
   transition: all 0.3s ease;
   color: #4b0082;

@@ -3,7 +3,7 @@ import styled from 'styled-components'
 import avatar from '../../img/avatar.png'
 import { menuItems } from '../../utils/menuItems'
 
-function Navigation({active, setActive}) {
+function Navigation({ active, setActive, onSignOut, user }) {
 
   const [message, setMessage] = useState(""); // ✅ toast state
 
@@ -44,7 +44,14 @@ function Navigation({active, setActive}) {
         {/* ✅ TOAST */}
         {message && <MessageBox>{message}</MessageBox>}
 
-        <div className="bottom-nav"></div>
+        <div className="bottom-nav">
+          {user && (
+            <div className="signout-row">
+              <span>{user.email}</span>
+              <button type="button" onClick={onSignOut}>Sign Out</button>
+            </div>
+          )}
+        </div>
     </NavStyled>
   )
 }
@@ -52,6 +59,7 @@ function Navigation({active, setActive}) {
 const NavStyled = styled.nav`
     padding: 2rem 1.5rem;
     width: 336px;
+    max-width: 100%;
     height: 100%;
     background: rgba(252, 246, 249, 0.78);
     border: 3px solid #FFFFFF;
@@ -61,6 +69,17 @@ const NavStyled = styled.nav`
     flex-direction: column;
     justify-content: space-between;
     gap: 2rem;
+
+    @media (max-width: 768px) {
+      width: 100%;
+      padding: 1.5rem 1rem;
+      border-radius: 24px;
+    }
+
+    @media (max-width: 480px) {
+      padding: 1rem 0.85rem;
+      border-radius: 18px;
+    }
 
     .user-con{
         height: 100px;
@@ -85,6 +104,20 @@ const NavStyled = styled.nav`
             font-weight: 900;
             font-size: 37px;
         }
+
+        @media (max-width: 480px) {
+          flex-direction: column;
+          align-items: flex-start;
+
+          img {
+            width: 52px;
+            height: 52px;
+          }
+
+          p {
+            font-size: 28px;
+          }
+        }
     }
 
     .menu-items{
@@ -103,6 +136,11 @@ const NavStyled = styled.nav`
             color: rgba(34, 34, 96, .6);
             padding-left: 1rem;
             position: relative;
+
+            @media (max-width: 480px) {
+              grid-template-columns: 32px auto;
+              padding-left: 0.8rem;
+            }
 
             &:hover{
                 color: darkviolet;
@@ -128,6 +166,36 @@ const NavStyled = styled.nav`
             background: #222260;
             border-radius: 0 10px 10px 0;
         }
+    }
+
+    .bottom-nav {
+      padding-top: 1rem;
+      border-top: 1px solid rgba(34, 34, 96, 0.08);
+    }
+
+    .signout-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding-top: 1rem;
+      color: #4b0082;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .signout-row button {
+      background: transparent;
+      border: 1px solid #7b2ff7;
+      color: #7b2ff7;
+      border-radius: 12px;
+      padding: 8px 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .signout-row button:hover {
+      background: rgba(123, 47, 247, 0.1);
     }
 `;
 

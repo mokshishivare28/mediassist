@@ -1,5 +1,5 @@
 // OpenRouter API Configuration
-const OPENROUTER_API_KEY = ""; 
+const OPENROUTER_API_KEY = "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"; 
 const OPENROUTER_MODEL = "openai/gpt-3.5-turbo"; // or use "meta-llama/llama-2-70b-chat" or other models
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 

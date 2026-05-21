@@ -7,6 +7,8 @@ import Home from "./Components/Home/Home";
 import MentalWellness from "./Components/MentalWellness/MentalWellness";
 import MedicalConsultation from "./Components/SymptomAnalysis/MedicalConsultation";
 import LoadingScreen from "./Components/LoadingScreen/LoadingScreen";
+import AuthPage from "./Components/Auth/AuthPage";
+import { supabase, isSupabaseConfigValid } from "./supabase";
 import "./index.css";
 
 function App() {
@@ -14,6 +16,7 @@ function App() {
   const [loadingApp, setLoadingApp] = useState(true);
   const [fil, setFil] = useState([]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [user, setUser] = useState(null);
   const updateActive = (activeState) => {
     setActive(activeState);
     setMobileMenuOpen(false); // Close menu after selection
@@ -36,14 +39,57 @@ function App() {
   };
 
   useEffect(() => {
+    let subscription = null;
+
+    if (isSupabaseConfigValid) {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        setUser(session?.user || null);
+      });
+
+      const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(
+        (event, session) => {
+          setUser(session?.user || null);
+        }
+      );
+      subscription = authSubscription;
+    }
+
     const t = setTimeout(() => setLoadingApp(false), 4000);
-    return () => clearTimeout(t);
+    return () => {
+      clearTimeout(t);
+      if (subscription) subscription.unsubscribe();
+    };
   }, []);
+
+  const handleSignOut = async () => {
+    try {
+      if (supabase) {
+        await supabase.auth.signOut();
+      }
+      setActive(1);
+    } catch (error) {
+      console.error('Sign-out failed:', error);
+    }
+  };
 
   return (
     <AppStyled bg={bg} className="App">
       {loadingApp ? (
         <LoadingScreen />
+      ) : !isSupabaseConfigValid ? (
+        <div style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', padding: '32px', textAlign: 'center' }}>
+          <div style={{ maxWidth: 520, background: 'rgba(255,255,255,0.95)', borderRadius: 28, border: '1px solid #ddd', padding: 36, boxShadow: '0 20px 60px rgba(0,0,0,0.08)' }}>
+            <h1 style={{ fontSize: 32, marginBottom: 16, color: '#3f2d7d' }}>Supabase configuration missing</h1>
+            <p style={{ fontSize: 16, color: '#4b4b4b', lineHeight: 1.6 }}>
+              Your app needs Supabase config values set in a <code>.env</code> file at the project root. Create a file named <code>.env</code> and add the keys shown in <code>.env.example</code>.
+            </p>
+            <p style={{ marginTop: 24, color: '#2f1b6f', fontWeight: 600 }}>
+              After adding the values, restart the development server.
+            </p>
+          </div>
+        </div>
+      ) : !user ? (
+        <AuthPage onAuthSuccess={setUser} />
       ) : (
         <MainLayout>
           <Navigation 
@@ -51,6 +97,8 @@ function App() {
             setActive={updateActive} 
             mobileMenuOpen={mobileMenuOpen}
             setMobileMenuOpen={setMobileMenuOpen}
+            onSignOut={handleSignOut}
+            user={user}
           />
           <main>{displayData()}</main>
         </MainLayout>
@@ -60,9 +108,11 @@ function App() {
 }
 
 const AppStyled = styled.div`
-  height: 100vh;
+  min-height: 100vh;
   background-image: url(${(props) => props.bg});
   position: relative;
+  display: flex;
+  flex-direction: column;
   main {
     flex: 1;
     background: rgba(252, 246, 249, 0.78);
@@ -70,13 +120,13 @@ const AppStyled = styled.div`
     backdrop-filter: blur(4.5px);
     border-radius: 32px;
     overflow-x: hidden;
+    overflow-y: auto;
     &::-webkit-scrollbar {
       width: 0;
     }
   }
   
   @media (max-width: 768px) {
-    height: 100vh;
     main {
       border-radius: 16px;
       border-width: 2px;
@@ -84,7 +134,6 @@ const AppStyled = styled.div`
   }
   
   @media (max-width: 480px) {
-    height: 100vh;
     main {
       border-radius: 8px;
       border-width: 1px;
