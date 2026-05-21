@@ -13,8 +13,10 @@ function App() {
   const [active, setActive] = useState(1);
   const [loadingApp, setLoadingApp] = useState(true);
   const [fil, setFil] = useState([]);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const updateActive = (activeState) => {
     setActive(activeState);
+    setMobileMenuOpen(false); // Close menu after selection
   };
 
   const updateFilter = (fils) => {};
@@ -34,7 +36,7 @@ function App() {
   };
 
   useEffect(() => {
-    const t = setTimeout(() => setLoadingApp(false), 2000);
+    const t = setTimeout(() => setLoadingApp(false), 4000);
     return () => clearTimeout(t);
   }, []);
 
@@ -44,7 +46,12 @@ function App() {
         <LoadingScreen />
       ) : (
         <MainLayout>
-          <Navigation active={active} setActive={setActive} />
+          <Navigation 
+            active={active} 
+            setActive={updateActive} 
+            mobileMenuOpen={mobileMenuOpen}
+            setMobileMenuOpen={setMobileMenuOpen}
+          />
           <main>{displayData()}</main>
         </MainLayout>
       )}
@@ -65,6 +72,22 @@ const AppStyled = styled.div`
     overflow-x: hidden;
     &::-webkit-scrollbar {
       width: 0;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    height: 100vh;
+    main {
+      border-radius: 16px;
+      border-width: 2px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    height: 100vh;
+    main {
+      border-radius: 8px;
+      border-width: 1px;
     }
   }
 `;
